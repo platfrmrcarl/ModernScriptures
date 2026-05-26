@@ -1,0 +1,16 @@
+# Large binaries
+*.pdf
+
+# Generated data
+/data/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Editor
+.vscode/
+.idea/
+*.swp
