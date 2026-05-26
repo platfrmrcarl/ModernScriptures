@@ -34,7 +34,7 @@ BOOK_TITLES = {
 
 
 def _verse_paragraph(v, style):
-    body = v.modernized if v.modernized else f"[verse {v.chapter}:{v.verse} not yet modernized]"
+    body = v.modernized if v.modernized else f'<i>{v.original}</i>'
     return Paragraph(f'<font size=8><super>{v.verse}</super></font> {body}', style)
 
 

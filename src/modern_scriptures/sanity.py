@@ -16,6 +16,12 @@ _COMMON_CAPS = {
     "And", "But", "For", "The", "Then", "When", "Where", "Behold", "Yea",
     "Wherefore", "Therefore", "Now", "Also", "Verily", "If", "Of", "In",
     "Lord", "God", "Father", "Son", "Spirit", "Christ", "Jesus", "Holy",
+    "Thou", "Thee", "Thy", "Thine", "Hast", "Hath", "Doth",
+    "Shalt", "Wilt", "Saith", "Cometh", "Goeth", "Knoweth", "Doeth",
+    "Unto", "Howbeit", "Thus", "Whosoever", "Whatsoever", "Wherein",
+    "Whereby", "Whence", "Hither", "Thither", "That", "This", "These",
+    "Those", "Which", "Who",
+    "So", "Yet", "Even", "Nevertheless", "Notwithstanding",
 }
 
 

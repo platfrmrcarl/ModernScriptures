@@ -13,6 +13,8 @@ import sys
 import time
 from pathlib import Path
 
+import os
+
 import ollama
 
 from modern_scriptures.fetcher import BOOKS
@@ -22,7 +24,8 @@ ROOT = Path(__file__).resolve().parents[1]
 SRC_DIR = ROOT / "data" / "source"
 DST_DIR = ROOT / "data" / "modernized"
 FAILED_LOG = ROOT / "data" / "failed.jsonl"
-MODEL = "gemma4:latest"
+MODEL = os.environ.get("MS_MODEL", "qwen2.5:7b")
+OLLAMA_HOST = os.environ.get("MS_OLLAMA_HOST", "http://127.0.0.1:11436")
 
 
 def _progress_factory(slug: str, total: int):
@@ -51,8 +54,8 @@ def run_one(slug: str) -> None:
     # Count for progress reporting
     from modern_scriptures.schema import read_book
     total = len(read_book(src))
-    client = ollama.Client()
-    print(f"[modernize:{slug}] starting; total={total}", file=sys.stderr)
+    client = ollama.Client(host=OLLAMA_HOST)
+    print(f"[modernize:{slug}] starting; total={total} model={MODEL} host={OLLAMA_HOST}", file=sys.stderr)
     modernize_book(
         client, src, dst,
         failed_log=FAILED_LOG,
