@@ -71,3 +71,29 @@ def test_logs_failures_and_continues(tmp_path: Path):
     assert len(lines) == 1
     record = json.loads(lines[0])
     assert record["book"] == "Moses" and record["chapter"] == 1 and record["verse"] == 1
+
+
+def test_continues_on_modernize_exception(tmp_path: Path):
+    src = tmp_path / "src.json"
+    dst = tmp_path / "dst.json"
+    failed = tmp_path / "failed.jsonl"
+    write_book(src, [
+        Verse("Moses", 1, 1, "First verse of scripture text.", None),
+        Verse("Moses", 1, 2, "Second verse of scripture text.", None),
+    ])
+
+    # First call raises, second succeeds.
+    fake = MagicMock()
+    fake.chat.side_effect = [
+        ConnectionError("ollama unreachable"),
+        {"message": {"content": "Second verse modernized."}},
+    ]
+    modernize_book(fake, src, dst, failed_log=failed, model="gemma4:26b")
+    out = read_book(dst)
+    assert out[0].modernized is None
+    assert out[1].modernized == "Second verse modernized."
+    import json
+    rec = json.loads(failed.read_text().strip())
+    assert rec["book"] == "Moses" and rec["chapter"] == 1 and rec["verse"] == 1
+    assert "exception" in rec["reason"].lower()
+    assert "ConnectionError" in rec["reason"]

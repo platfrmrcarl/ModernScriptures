@@ -6,7 +6,7 @@ import json
 from dataclasses import replace
 from pathlib import Path
 
-from .modernize_core import modernize_one
+from .modernize_core import ModernizeResult, modernize_one
 from .schema import Verse, read_book, write_book
 
 
@@ -41,7 +41,23 @@ def modernize_book(
     for i, src_v in enumerate(source):
         if state[i].modernized:
             continue
-        result = modernize_one(client, src_v.original, model=model)
+        try:
+            result = modernize_one(client, src_v.original, model=model)
+        except Exception as exc:
+            reason = f"exception: {type(exc).__name__}: {exc}"
+            state[i] = replace(src_v, modernized=None)
+            write_book(dst_path, state)
+            failed_log.parent.mkdir(parents=True, exist_ok=True)
+            with open(failed_log, "a", encoding="utf-8") as f:
+                f.write(json.dumps({
+                    "book": src_v.book,
+                    "chapter": src_v.chapter,
+                    "verse": src_v.verse,
+                    "reason": reason,
+                }) + "\n")
+            if progress is not None:
+                progress(src_v, ModernizeResult(ok=False, modernized=None, attempts=1, last_reason=reason))
+            continue
         state[i] = replace(src_v, modernized=result.modernized)
         write_book(dst_path, state)
         if not result.ok:
