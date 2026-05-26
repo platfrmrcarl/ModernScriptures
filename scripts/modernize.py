@@ -22,7 +22,7 @@ ROOT = Path(__file__).resolve().parents[1]
 SRC_DIR = ROOT / "data" / "source"
 DST_DIR = ROOT / "data" / "modernized"
 FAILED_LOG = ROOT / "data" / "failed.jsonl"
-MODEL = "gemma4:26b"
+MODEL = "gemma4:latest"
 
 
 def _progress_factory(slug: str, total: int):
