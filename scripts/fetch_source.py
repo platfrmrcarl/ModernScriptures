@@ -14,7 +14,7 @@ from pathlib import Path
 
 import requests
 
-from modern_scriptures.fetcher import BOOKS, normalize_bcbooks
+from modern_scriptures.fetcher import BOOKS, normalize_bcbooks, normalize_dc
 from modern_scriptures.schema import write_book
 
 DATA_DIR = Path(__file__).resolve().parents[1] / "data" / "source"
@@ -35,7 +35,7 @@ def fetch_one(slug: str) -> None:
     r = requests.get(url, timeout=60)
     r.raise_for_status()
     raw = r.json()
-    verses = normalize_bcbooks(raw)
+    verses = normalize_dc(raw) if slug == "dc" else normalize_bcbooks(raw)
     out_path = DATA_DIR / f"{slug}.json"
     write_book(out_path, verses)
     print(f"[fetch] {slug}: {len(verses)} verses -> {out_path}", file=sys.stderr)

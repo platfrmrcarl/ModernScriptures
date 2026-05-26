@@ -30,3 +30,22 @@ def normalize_bcbooks(raw: dict) -> list[Verse]:
                     modernized=None,
                 ))
     return out
+
+
+def normalize_dc(raw: dict) -> list[Verse]:
+    """Normalize Doctrine & Covenants: top-level `sections`, no `books` array.
+
+    Sections function as chapters under a single book name.
+    """
+    out: list[Verse] = []
+    for sec in raw.get("sections", []):
+        snum = int(sec["section"])
+        for v in sec.get("verses", []):
+            out.append(Verse(
+                book="Doctrine and Covenants",
+                chapter=snum,
+                verse=int(v["verse"]),
+                original=v["text"].strip(),
+                modernized=None,
+            ))
+    return out
