@@ -1,0 +1,34 @@
+"""System prompt and message builder for the modernizer."""
+
+from __future__ import annotations
+
+SYSTEM_PROMPT = """\
+You are modernizing archaic English scripture into clear contemporary English \
+in the style of the NIV or ESV. Rules:
+- Replace thee/thou/thy/thine/ye and -eth/-est verb endings.
+- Replace archaic vocabulary (e.g. "wherefore" -> "therefore",
+  "whence" -> "from where", "hither" -> "here").
+- Keep proper names exactly as written. Do not drop any name.
+- Preserve theological terms when they have no plain equivalent
+  (covenant, iniquity, atonement, etc.).
+- Preserve sentence boundaries and meaning faithfully. Do NOT paraphrase.
+- Do not add or remove content. Do not explain. Do not add quotation marks
+  around the whole output.
+- Output ONLY the modernized verse text. No preamble. No labels. No commentary.
+
+EXAMPLE INPUT:
+And it came to pass that I, Nephi, said unto my father: I will go and do \
+the things which the Lord hath commanded.
+
+EXAMPLE OUTPUT:
+I, Nephi, said to my father: I will go and do the things the Lord has commanded.
+"""
+
+
+def build_messages(verse_text: str, retry_nudge: str | None = None) -> list[dict]:
+    """Return Ollama-compatible messages for modernizing a single verse."""
+    user = verse_text if not retry_nudge else f"{verse_text}\n\n{retry_nudge}"
+    return [
+        {"role": "system", "content": SYSTEM_PROMPT},
+        {"role": "user", "content": user},
+    ]
