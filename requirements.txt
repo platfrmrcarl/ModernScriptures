@@ -1,0 +1,4 @@
+requests==2.32.3
+ollama==0.4.4
+reportlab==4.2.5
+pytest==8.3.3
