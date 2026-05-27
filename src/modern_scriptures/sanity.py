@@ -12,7 +12,8 @@ _PREAMBLE_PREFIXES = (
 _PROPER_NAME_RE = re.compile(r"\b[A-Z][a-zA-Z'-]{2,}\b")
 
 # Words that look like proper names but are common sentence-starters.
-_COMMON_CAPS = {
+# Stored lowercase; matched case-insensitively.
+_COMMON_CAPS = {w.lower() for w in {
     "And", "But", "For", "The", "Then", "When", "Where", "Behold", "Yea",
     "Wherefore", "Therefore", "Now", "Also", "Verily", "If", "Of", "In",
     "Lord", "God", "Father", "Son", "Spirit", "Christ", "Jesus", "Holy",
@@ -22,11 +23,23 @@ _COMMON_CAPS = {
     "Whereby", "Whence", "Hither", "Thither", "That", "This", "These",
     "Those", "Which", "Who",
     "So", "Yet", "Even", "Nevertheless", "Notwithstanding",
-}
+    # Pronouns capitalized at sentence start.
+    "He", "She", "It", "They", "We", "You", "I", "Me", "Us", "Them", "Mine",
+    "Yours", "Hers", "His", "Theirs", "Ours", "One",
+    # KJV/scripture-style sentence-start imperatives and archaic verbs/adverbs.
+    "Get", "Say", "Know", "Neither", "Fulfil", "Shared", "Take", "Give",
+    "See", "Hear", "Come", "Go", "Tell", "Stand", "Speak", "Pass", "Make",
+    "Let", "Cast", "Bring", "Put", "Smite", "Eat", "Drink",
+    "Art", "Suppose", "Whither", "Suffer", "Except", "Touch", "Believing",
+    "Knowest", "Believest", "Sayest", "Doest", "Mayst", "Canst",
+    # KJV all-caps for divine names — modernizer correctly outputs title case.
+    "LORD", "JEHOVAH", "ZION", "GOD",
+}}
 
 
 def _proper_names(text: str) -> set[str]:
-    return {m for m in _PROPER_NAME_RE.findall(text) if m not in _COMMON_CAPS}
+    """Lowercased proper-name tokens, minus common sentence-start words."""
+    return {m.lower() for m in _PROPER_NAME_RE.findall(text) if m.lower() not in _COMMON_CAPS}
 
 
 def _length_ok(original: str, output: str) -> bool:
