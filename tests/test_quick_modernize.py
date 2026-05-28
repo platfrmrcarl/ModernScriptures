@@ -66,3 +66,21 @@ def test_art_thou_and_thou_art_still_modernized():
 def test_wilt_thou_and_thou_wilt_still_modernized():
     assert quick_modernize("Wilt thou go? Thou wilt see.") == \
         "Will you go? You will see."
+
+
+def test_explicit_eth_endings():
+    assert quick_modernize(
+        "He saith. He cometh. He goeth. He knoweth. He doeth."
+    ) == "He says. He comes. He goes. He knows. He does."
+
+
+def test_explicit_est_endings():
+    assert quick_modernize(
+        "Thou knowest. Thou sayest. Thou doest. Thou believest."
+    ) == "You know. You say. You do. You believe."
+
+
+def test_eth_est_does_not_overreach():
+    # No generic -eth/-est rule -- only the explicit list. Words not on
+    # the list stay as-is. This is a conscious tradeoff.
+    assert quick_modernize("He doubteth not.") == "He doubteth not."

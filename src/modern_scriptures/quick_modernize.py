@@ -74,6 +74,20 @@ _add("mayst", "may")
 _add("canst", "can")
 _add("hast", "have")
 
+# --- Explicit -eth endings (3rd person singular present) ---
+# DO NOT add a generic \w+eth rule: it would mutate Elizabeth, meeketh, etc.
+_add("saith", "says")
+_add("cometh", "comes")
+_add("goeth", "goes")
+_add("knoweth", "knows")
+_add("doeth", "does")
+
+# --- Explicit -est endings (2nd person singular) ---
+_add("knowest", "know")
+_add("sayest", "say")
+_add("doest", "do")
+_add("believest", "believe")
+
 
 def quick_modernize(text: str) -> str:
     """Apply all rules in order; return the modernized string."""
