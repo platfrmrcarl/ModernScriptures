@@ -35,7 +35,10 @@ BOOK_TITLES = {
 
 
 def _verse_paragraph(v, style):
-    body = v.modernized if v.modernized else quick_modernize(v.original)
+    # Apply quick_modernize to every verse body — the LLM frequently leaves
+    # residual archaic words (unto/verily/thee) in its "modernized" output,
+    # so we run the deterministic pass on top regardless of source.
+    body = quick_modernize(v.modernized if v.modernized else v.original)
     return Paragraph(f'<font size=8><super>{v.verse}</super></font> {body}', style)
 
 

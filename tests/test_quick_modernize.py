@@ -68,6 +68,55 @@ def test_wilt_thou_and_thou_wilt_still_modernized():
         "Will you go? You will see."
 
 
+def test_art_not_you_inverted_question():
+    assert quick_modernize("Art not thou God in heaven?") == \
+        "Are not you God in heaven?"
+
+
+def test_relative_clause_art():
+    # "Our Father which art in heaven" -- common KJV relative-clause form.
+    assert quick_modernize(
+        "Our Father which art in heaven, hallowed be thy name."
+    ) == "Our Father which are in heaven, hallowed be your name."
+
+
+def test_wilt_not_thou_inverted_question():
+    assert quick_modernize("Wilt not thou possess it?") == \
+        "Will not you possess it?"
+
+
+def test_and_wilt_deferred_subject():
+    # "if thou ... and wilt do" -- subject "thou" is several clauses back.
+    assert quick_modernize(
+        "If thou hearken, and wilt do what is right."
+    ) == "If you hearken, and will do what is right."
+
+
+def test_art_as_noun_still_safe_with_relative_clause_rule():
+    # The new "who/which/that art" rule must not mutate "art of the perfumer".
+    assert quick_modernize(
+        "compounded according to the art of the perfumer."
+    ) == "compounded according to the art of the perfumer."
+
+
+def test_additional_archaic_aux_and_pronoun():
+    assert quick_modernize(
+        "Thou wast there. Thou didst speak. Thy God spake. Know thyself."
+    ) == "You were there. You did speak. Your God spoke. Know yourself."
+
+
+def test_but_wilt_and_and_art():
+    # Continuation conjunctions where the subject "thou" was earlier.
+    assert quick_modernize(
+        "Remember me, but wilt give. Be patient, and art confident."
+    ) == "Remember me, but will give. Be patient, and are confident."
+
+
+def test_thyself_art():
+    assert quick_modernize("Thou thyself art a guide.") == \
+        "You yourself are a guide."
+
+
 def test_explicit_eth_endings():
     assert quick_modernize(
         "He saith. He cometh. He goeth. He knoweth. He doeth."

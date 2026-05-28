@@ -63,6 +63,10 @@ _add("doth", "does")
 # those contexts so we don't mangle the noun ("the art of the apothecary").
 _RULES.append((re.compile(r"\b(You|you)\s+art\b"), r"\1 are"))
 _RULES.append((re.compile(r"\b(A|a)rt\s+(you|You)\b"), r"\1re \2"))
+# Also handle "Art not you ...?" (KJV inverted question) and the relative-
+# clause forms "who/which/that art" — all unambiguously verb usage.
+_RULES.append((re.compile(r"\b(A|a)rt\s+not\s+(you|You)\b"), r"\1re not \2"))
+_RULES.append((re.compile(r"\b(who|which|that)\s+art\b"), r"\1 are"))
 _add("shalt", "will")
 # Same rationale as `art` above: `wilt` is a verb only in "thou wilt" /
 # "wilt thou" context. After pronoun replacement that's "you wilt" /
@@ -70,9 +74,24 @@ _add("shalt", "will")
 # those to avoid "flowers wilt" -> "flowers will".
 _RULES.append((re.compile(r"\b(You|you)\s+wilt\b"), r"\1 will"))
 _RULES.append((re.compile(r"\b(W|w)ilt\s+(you|You)\b"), r"\1ill \2"))
+# Also handle "Wilt not you ...?" / "wilt do/give" after a comma-deferred
+# subject ("if you... and wilt do X"). For the latter we match "and wilt"
+# as another verb-context marker.
+_RULES.append((re.compile(r"\b(W|w)ilt\s+not\s+(you|You)\b"), r"\1ill not \2"))
+_RULES.append((re.compile(r"\b(and|And)\s+wilt\b"), r"\1 will"))
 _add("mayst", "may")
 _add("canst", "can")
 _add("hast", "have")
+_add("wast", "were")
+_add("didst", "did")
+_add("spake", "spoke")
+_add("thyself", "yourself")
+
+# Inverted-question, deferred-subject, and relative-clause forms that the
+# pronoun-context rules above don't catch.
+_RULES.append((re.compile(r"\b(But|but)\s+wilt\b"), r"\1 will"))
+_RULES.append((re.compile(r"\b(And|and)\s+art\b"), r"\1 are"))
+_RULES.append((re.compile(r"\b(thyself|yourself)\s+art\b"), r"\1 are"))
 
 # --- Explicit -eth endings (3rd person singular present) ---
 # DO NOT add a generic \w+eth rule: it would mutate Elizabeth, meeketh, etc.
