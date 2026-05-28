@@ -15,10 +15,31 @@ from reportlab.lib.pagesizes import inch
 from reportlab.platypus import (
     SimpleDocTemplate, Paragraph, PageBreak, Spacer,
 )
+from reportlab.platypus.tableofcontents import TableOfContents
 
 from modern_scriptures.layout import build_styles, group_by_chapter
 from modern_scriptures.schema import read_book
 from modern_scriptures.quick_modernize import quick_modernize
+
+
+class ScriptureDoc(SimpleDocTemplate):
+    """SimpleDocTemplate that emits TOC entries for section/book headings.
+
+    ReportLab's TableOfContents flowable populates itself by listening for
+    'TOCEntry' notifications. We emit one when a Paragraph styled as
+    'section' (Old Testament, Book of Mormon, ...) or 'book' (Genesis,
+    1 Nephi, ...) lands on a page. `multiBuild` then does several passes
+    to resolve the page numbers.
+    """
+
+    def afterFlowable(self, flowable):
+        if not isinstance(flowable, Paragraph):
+            return
+        name = getattr(flowable.style, "name", "")
+        if name == "section":
+            self.notify("TOCEntry", (0, flowable.getPlainText(), self.page))
+        elif name == "book":
+            self.notify("TOCEntry", (1, flowable.getPlainText(), self.page))
 
 # 6x9 inches in points.
 PAGE_SIZE = (6 * inch, 9 * inch)
@@ -44,7 +65,7 @@ def _verse_paragraph(v, style):
 
 def render(src_dir: Path, out_path: Path, title: str = "Modern Scriptures") -> None:
     styles = build_styles()
-    doc = SimpleDocTemplate(
+    doc = ScriptureDoc(
         str(out_path),
         pagesize=PAGE_SIZE,
         leftMargin=0.6 * inch, rightMargin=0.6 * inch,
@@ -58,18 +79,20 @@ def render(src_dir: Path, out_path: Path, title: str = "Modern Scriptures") -> N
     story.append(Paragraph(title, styles["title"]))
     story.append(PageBreak())
 
-    # Table of contents (simple — list books that have files)
-    story.append(Paragraph("Contents", styles["book"]))
-    available = [s for s in BOOK_ORDER if (src_dir / f"{s}.json").exists()]
-    for slug in available:
-        story.append(Paragraph(BOOK_TITLES[slug], styles["toc"]))
+    # Table of contents. Auto-populated during multiBuild via afterFlowable
+    # notifications keyed off the 'section' and 'book' paragraph styles.
+    story.append(Paragraph("Contents", styles["contents_heading"]))
+    toc = TableOfContents()
+    toc.levelStyles = [styles["toc_section"], styles["toc_book"]]
+    story.append(toc)
     story.append(PageBreak())
 
+    available = [s for s in BOOK_ORDER if (src_dir / f"{s}.json").exists()]
     for slug in available:
         verses = read_book(src_dir / f"{slug}.json")
         if not verses:
             continue
-        story.append(Paragraph(BOOK_TITLES[slug], styles["book"]))
+        story.append(Paragraph(BOOK_TITLES[slug], styles["section"]))
         groups = group_by_chapter(verses)
         current_book = None
         for (book, chapter), chapter_verses in groups.items():
@@ -83,7 +106,9 @@ def render(src_dir: Path, out_path: Path, title: str = "Modern Scriptures") -> N
                 story.append(_verse_paragraph(v, styles["verse"]))
         story.append(PageBreak())
 
-    doc.build(story)
+    # multiBuild does multiple passes so TableOfContents entries resolve to
+    # final page numbers.
+    doc.multiBuild(story)
 
 
 def main() -> int:
