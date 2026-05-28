@@ -11,7 +11,9 @@ _PREAMBLE_PREFIXES = (
 
 _PROPER_NAME_RE = re.compile(r"\b[A-Z][a-zA-Z'-]{2,}\b")
 
-# Words that look like proper names but are common sentence-starters.
+# Words that look like proper names but are common sentence-starters,
+# common nouns, theological terms the LLM may lowercase, or abbreviations
+# that are routinely modernized (e.g., "Jun." -> "Jr.").
 # Stored lowercase; matched case-insensitively.
 _COMMON_CAPS = {w.lower() for w in {
     "And", "But", "For", "The", "Then", "When", "Where", "Behold", "Yea",
@@ -34,12 +36,41 @@ _COMMON_CAPS = {w.lower() for w in {
     "Knowest", "Believest", "Sayest", "Doest", "Mayst", "Canst",
     # KJV all-caps for divine names — modernizer correctly outputs title case.
     "LORD", "JEHOVAH", "ZION", "GOD",
+    # Sentence-start common verbs/nouns observed as false positives in
+    # data/failed.jsonl (see 2026-05-27 spec).
+    "Jun", "Trifle", "Remember", "Lay", "Think", "Whoso", "Whosoever",
+    "Presidency", "Concern", "According", "Forever", "Justice", "Gather",
+    "Order", "Heart", "Pure", "State", "Stem", "May", "Higbee", "Questions",
+    "Revelation", "What", "Esaias", "Amen", "Said", "Shall", "Was", "Die",
+    "Cold", "Blood", "Innocent", "Murdered", "Angels",
+    # Theological / institutional common nouns the LLM may legitimately
+    # lowercase. We rely on the substring containment check (below) to still
+    # catch outright drops.
+    "Gospel", "Priesthood", "Covenant", "Atonement", "Ghost", "Cherubims",
+    "Cherubim",
 }}
 
 
-def _proper_names(text: str) -> set[str]:
-    """Lowercased proper-name tokens, minus common sentence-start words."""
-    return {m.lower() for m in _PROPER_NAME_RE.findall(text) if m.lower() not in _COMMON_CAPS}
+def _candidate_names(text: str) -> list[str]:
+    """Capitalized tokens from text that look like proper names.
+
+    Returns original-case strings, deduped, minus _COMMON_CAPS.
+    """
+    seen = set()
+    out = []
+    for m in _PROPER_NAME_RE.findall(text):
+        if m.lower() in _COMMON_CAPS:
+            continue
+        if m in seen:
+            continue
+        seen.add(m)
+        out.append(m)
+    return out
+
+
+def _normalize(token: str) -> str:
+    """Lowercase and strip hyphens for substring matching."""
+    return token.lower().replace("-", "")
 
 
 def _length_ok(original: str, output: str) -> bool:
@@ -66,7 +97,11 @@ def check_modernization(original: str, output: str) -> tuple[bool, str]:
         return False, "preamble or wrapping quotes detected"
     if not _length_ok(original, output):
         return False, f"length out of bounds ({len(output)} vs {len(original)})"
-    missing = _proper_names(original) - _proper_names(output)
+    output_norm = _normalize(output)
+    missing = sorted({
+        name for name in _candidate_names(original)
+        if _normalize(name) not in output_norm
+    })
     if missing:
-        return False, f"proper name(s) missing: {sorted(missing)}"
+        return False, f"proper name(s) missing: {[n.lower() for n in missing]}"
     return True, ""
