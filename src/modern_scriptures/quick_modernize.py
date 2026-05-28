@@ -20,7 +20,8 @@ import re
 # Case handling: each rule is registered in two forms via _add() -- the
 # lowercase form and the title-case form -- so "Thou" -> "You" and
 # "thou" -> "you" both work without an IGNORECASE-with-case-rewriting
-# scheme. ALL-CAPS forms (LORD, JEHOVAH) are intentionally NOT touched.
+# scheme. ALL-CAPS forms (LORD, JEHOVAH) are unaffected because we register only
+# lowercase and title-case variants and regex is case-sensitive.
 
 _RULES: list[tuple[re.Pattern[str], str]] = []
 
@@ -37,6 +38,8 @@ def _add(pattern: str, replacement: str) -> None:
 
 # --- Pronouns ---
 # `thine` rules go FIRST (more specific lookahead first).
+# Lookahead rules use a regex group and are appended manually -- _add() only
+# handles plain word patterns with no groups.
 _RULES.append((
     re.compile(r"\bthine(\s+)(?=[aeiouAEIOU])"),
     r"your\1",
@@ -54,9 +57,19 @@ _add("ye", "you")
 # --- Auxiliary verbs ---
 _add("hath", "has")
 _add("doth", "does")
-_add("art", "are")
+# `art` is a verb only after a pronoun ("thou art" / "art thou"). After the
+# pronoun rules above run, those become "you art" / "art you" (and the
+# sentence-initial "Art thou" stays title-case as "Art you"). Match only
+# those contexts so we don't mangle the noun ("the art of the apothecary").
+_RULES.append((re.compile(r"\b(You|you)\s+art\b"), r"\1 are"))
+_RULES.append((re.compile(r"\b(A|a)rt\s+(you|You)\b"), r"\1re \2"))
 _add("shalt", "will")
-_add("wilt", "will")
+# Same rationale as `art` above: `wilt` is a verb only in "thou wilt" /
+# "wilt thou" context. After pronoun replacement that's "you wilt" /
+# "wilt you" (and sentence-initial "Wilt thou" -> "Wilt you"). Match only
+# those to avoid "flowers wilt" -> "flowers will".
+_RULES.append((re.compile(r"\b(You|you)\s+wilt\b"), r"\1 will"))
+_RULES.append((re.compile(r"\b(W|w)ilt\s+(you|You)\b"), r"\1ill \2"))
 _add("mayst", "may")
 _add("canst", "can")
 _add("hast", "have")

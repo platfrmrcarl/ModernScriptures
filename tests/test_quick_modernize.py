@@ -36,10 +36,33 @@ def test_shalt_and_wilt():
 
 
 def test_word_boundary_does_not_mutate_proper_name_elizabeth():
-    # No -eth/-est rule should chew into Elizabeth.
+    # When Task 4 adds saith/cometh/... the \b in those rules must keep Elizabeth safe.
     assert quick_modernize("Elizabeth bare a son.") == "Elizabeth bare a son."
 
 
 def test_word_boundary_does_not_mutate_other_words():
-    # "Other" contains "the" - must not be mutated.
+    # Forward-looking guardrail: any future rule looking for 'the' or 'art' must respect \b so 'Other' stays intact.
     assert quick_modernize("Other men also.") == "Other men also."
+
+
+def test_art_as_noun_is_not_mutated():
+    # "art" is only a verb after a pronoun; the noun must survive.
+    assert quick_modernize("an ointment after the art of the apothecary.") == \
+        "an ointment after the art of the apothecary."
+
+
+def test_wilt_as_verb_is_not_mutated():
+    # "wilt" without an adjacent thou/you is not the auxiliary verb.
+    assert quick_modernize("The flowers wilt in the sun.") == \
+        "The flowers wilt in the sun."
+
+
+def test_art_thou_and_thou_art_still_modernized():
+    # The two valid auxiliary contexts must still fire.
+    assert quick_modernize("Where art thou? Thou art mine.") == \
+        "Where are you? You are mine."
+
+
+def test_wilt_thou_and_thou_wilt_still_modernized():
+    assert quick_modernize("Wilt thou go? Thou wilt see.") == \
+        "Will you go? You will see."
