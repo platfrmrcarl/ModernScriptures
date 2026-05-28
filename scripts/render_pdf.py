@@ -18,6 +18,7 @@ from reportlab.platypus import (
 
 from modern_scriptures.layout import build_styles, group_by_chapter
 from modern_scriptures.schema import read_book
+from modern_scriptures.quick_modernize import quick_modernize
 
 # 6x9 inches in points.
 PAGE_SIZE = (6 * inch, 9 * inch)
@@ -34,7 +35,7 @@ BOOK_TITLES = {
 
 
 def _verse_paragraph(v, style):
-    body = v.modernized if v.modernized else f'<i>{v.original}</i>'
+    body = v.modernized if v.modernized else quick_modernize(v.original)
     return Paragraph(f'<font size=8><super>{v.verse}</super></font> {body}', style)
 
 
