@@ -15,3 +15,6 @@ venv/
 .vscode/
 .idea/
 *.swp
+
+# Claude Code session state
+.claude/
