@@ -84,3 +84,32 @@ def test_eth_est_does_not_overreach():
     # No generic -eth/-est rule -- only the explicit list. Words not on
     # the list stay as-is. This is a conscious tradeoff.
     assert quick_modernize("He doubteth not.") == "He doubteth not."
+
+
+def test_archaic_adverbs():
+    assert quick_modernize(
+        "Wherefore I come hither. Whither shall I go? Whence came he?"
+    ) == "Therefore I come here. Where shall I go? From where came he?"
+
+
+def test_unto_and_verily():
+    assert quick_modernize("Verily I say unto thee.") == \
+        "Truly I say to you."
+
+
+def test_howbeit_and_thither():
+    assert quick_modernize("Howbeit he went thither.") == \
+        "However he went there."
+
+
+def test_full_archaic_verse_end_to_end():
+    # A representative un-modernized Matthew verse.
+    original = (
+        "Thou shalt not tempt the Lord thy God. Verily I say unto thee, "
+        "he that cometh unto me, I will in no wise cast out."
+    )
+    expected = (
+        "You will not tempt the Lord your God. Truly I say to you, "
+        "he that comes to me, I will in no wise cast out."
+    )
+    assert quick_modernize(original) == expected

@@ -88,6 +88,20 @@ _add("sayest", "say")
 _add("doest", "do")
 _add("believest", "believe")
 
+# --- Archaic adverbs ---
+# Multi-word replacements: "whence" -> "from where" still gets capitalized
+# correctly because _add() registers both forms ("Whence" -> "From where").
+_add("wherefore", "therefore")
+_add("whence", "from where")
+_add("whither", "where")
+_add("hither", "here")
+_add("thither", "there")
+_add("howbeit", "however")
+_add("verily", "truly")
+
+# --- Other ---
+_add("unto", "to")
+
 
 def quick_modernize(text: str) -> str:
     """Apply all rules in order; return the modernized string."""
